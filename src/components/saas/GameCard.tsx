@@ -1,8 +1,8 @@
 import React from 'react';
-import type { GameScore } from '../../types/engine';
+import type { Game } from '../../types/domain';
 
 interface GameCardProps {
-    game: GameScore;
+    game: Game;
     index: number;
 }
 

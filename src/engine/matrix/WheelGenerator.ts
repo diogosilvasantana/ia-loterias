@@ -1,4 +1,4 @@
-import type { MatrixConfig } from '../../types/engine';
+// MatrixConfig type is defined in domain.ts but not used in this file
 
 /**
  * WheelGenerator (Gerador de Fechamentos)
@@ -15,7 +15,6 @@ export class WheelGenerator {
      */
     static *combine(source: number[], comboLength: number): Generator<number[]> {
         const sourceLen = source.length;
-        const combo = new Array(comboLength);
 
         // Headless recursion to generator
         // Or simple iterative

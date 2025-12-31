@@ -23,13 +23,11 @@ export const StatsView = ({ stats }: StatsViewProps) => {
                     Baseado na frequência histórica dos sorteios analisados.
                 </p>
                 <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                    {stats.hotNumbers.map((num, idx) => (
+                    {stats.hotNumbers.map((num) => (
                         <div key={num} className="group relative">
                             <LotteryBall
                                 number={num}
-                                featured
                                 size="sm"
-                                delay={idx * 0.05}
                             />
                             <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-200 text-[10px] px-2 py-1 rounded border border-slate-700 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
                                 {stats.frequencyMap[num]}x

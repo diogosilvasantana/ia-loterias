@@ -1,20 +1,23 @@
 import type {
-    GameScore,
+    Game,
     IntelligenceMode,
     MatrixConfig,
-    Strategy
-} from '../types/engine';
-import type { LotteryConfig } from '../types';
+    Strategy,
+    LotteryConfig,
+    GameStats,
+    StrategyResult
+} from '../types/domain';
 import { ALL_STRATEGIES } from './strategies';
 import { WheelGenerator } from './matrix/WheelGenerator';
 
-interface EngineRequest {
+export interface EngineRequest {
     lottery: LotteryConfig;
     mode: IntelligenceMode;
-    quantity: number; // How many games to return
+    quantity: number;
     matrixConfig?: MatrixConfig;
     excludedNumbers?: number[];
     fixedNumbers?: number[];
+    stats?: GameStats; // Optional: Required for Statistical mode
 }
 
 export class CoreEngine {
@@ -27,99 +30,139 @@ export class CoreEngine {
     /**
      * Main entry point to generate games
      */
-    public generate(request: EngineRequest): GameScore[] {
+    public generate(request: EngineRequest): Game[] {
         const { lottery, mode, quantity } = request;
 
         switch (mode) {
-            case 'SNIPER':
-                return this.generateSniper(lottery, quantity, request.fixedNumbers, request.excludedNumbers);
+            case 'RANDOM':
+                // Free Mode: Basic Random + Basic Filters (Sum, Even/Odd)
+                return this.generateRandomSmart(lottery, quantity, request.fixedNumbers, request.excludedNumbers);
+
+            case 'STATISTICAL':
+                // Pro Mode: Uses Stats (Hot/Cold) + All Filters (Frame, Delta, etc.)
+                return this.generateStatistical(lottery, quantity, request.stats, request.fixedNumbers, request.excludedNumbers);
+
             case 'DELTA':
                 return this.generateDelta(lottery, quantity);
+
             case 'MATRIX':
-                if (!request.matrixConfig) throw new Error("Matrix Config required for Matrix mode");
+                if (!request.matrixConfig) throw new Error("Configuração de Matriz necessária.");
                 return this.generateMatrix(lottery, request.matrixConfig);
+
             default:
-                return this.generateSniper(lottery, quantity);
+                return this.generateRandomSmart(lottery, quantity);
         }
     }
 
     /**
-     * Sniper Mode: Generates high-scoring random games
+     * Free Mode: Random generation with basic validation (Sum, Even/Odd)
      */
-    private generateSniper(
+    private generateRandomSmart(
         config: LotteryConfig,
         count: number,
         fixed: number[] = [],
         excluded: number[] = []
-    ): GameScore[] {
-        const results: GameScore[] = [];
+    ): Game[] {
+        const results: Game[] = [];
         let attempts = 0;
-        const MAX_ATTEMPTS = count * 200; // Limit to avoid infinite loops
+        const MAX_ATTEMPTS = count * 100;
+
+        // Filter out advanced strategies for Free mode, keep only basic ones
+        // Assuming 'sum-gauss' and 'parity-balance' are the basic ones
+        const basicStrategies = this.strategies.filter(s =>
+            s.id === 'sum-gauss' || s.id === 'parity-balance'
+        );
+
+        while (results.length < count && attempts < MAX_ATTEMPTS) {
+            attempts++;
+            const numbers = this.generateRandomNumbers(config, fixed, excluded);
+            const score = this.scoreGame(numbers, config, basicStrategies);
+
+            // Basic acceptance: > 50 score
+            if (score.totalScore >= 50 && score.strategiesResults.every(r => r.isValid)) {
+                results.push(score);
+            }
+        }
+
+        // Return sorted
+        return results.sort((a, b) => b.totalScore - a.totalScore);
+    }
+
+    /**
+     * Pro Mode: Uses Hot/Cold numbers and checks ALL strategies
+     */
+    private generateStatistical(
+        config: LotteryConfig,
+        count: number,
+        stats?: GameStats,
+        fixed: number[] = [],
+        excluded: number[] = []
+    ): Game[] {
+        const results: Game[] = [];
+        let attempts = 0;
+        const MAX_ATTEMPTS = count * 200;
 
         while (results.length < count && attempts < MAX_ATTEMPTS) {
             attempts++;
 
-            // 1. Generate Random Game
-            const numbers = this.generateRandomNumbers(config, fixed, excluded);
+            // 1. Generate with bias if stats available
+            let numbers: number[];
 
-            // 2. Score it
-            const score = this.scoreGame(numbers, config);
+            if (stats && Math.random() > 0.3) {
+                // 70% chance to try to use "Hot" numbers for part of the ticket
+                numbers = this.generateBiasedNumbers(config, stats, fixed, excluded);
+            } else {
+                numbers = this.generateRandomNumbers(config, fixed, excluded);
+            }
 
-            // 3. Acceptance Criteria (e.g. Score > 70)
+            // 2. Score with ALL strategies
+            const score = this.scoreGame(numbers, config, this.strategies);
+
+            // Strict acceptance for Pro: > 75 score
             if (score.totalScore > 75) {
                 results.push(score);
             }
         }
 
-        // Sort by score
         return results.sort((a, b) => b.totalScore - a.totalScore);
     }
 
-    /**
-     * Delta Mode: Uses Delta Strategy purely
-     */
-    private generateDelta(config: LotteryConfig, count: number): GameScore[] {
+    private generateDelta(config: LotteryConfig, count: number): Game[] {
         const deltaStrat = this.strategies.find(s => s.id === 'delta-system');
-        if (!deltaStrat || !deltaStrat.generate) {
-            throw new Error("Delta Strategy not found");
-        }
+        if (!deltaStrat || !deltaStrat.generate) throw new Error("Estratégia Delta não encontrada");
 
-        const results: GameScore[] = [];
+        const results: Game[] = [];
         for (let i = 0; i < count; i++) {
             const numbers = deltaStrat.generate(config, 1);
-            results.push(this.scoreGame(numbers, config));
+            results.push(this.scoreGame(numbers, config, this.strategies)); // Score with all
         }
         return results.sort((a, b) => b.totalScore - a.totalScore);
     }
 
-    /**
-     * Matrix Mode: Picks N best numbers, then rounds them
-     */
-    private generateMatrix(config: LotteryConfig, matrix: MatrixConfig): GameScore[] {
-        // 1. Pick 'totalNumbers' (e.g. 10) best candidates
-        const candidates = this.pickBestCandidates(config, matrix.totalNumbers);
+    private generateMatrix(config: LotteryConfig, matrix: MatrixConfig): Game[] {
+        // Simple matrix: Generate best candidates then wheel
+        // If we had stats, we'd pick hot numbers. Without stats, we pick random or from a "good" generated batch.
 
-        // 2. Wheel them
+        const candidates = this.generateRandomNumbers(config, [], [], matrix.totalNumbers); // Generate N unique randoms
+        // In real world, candidates should be chosen by the user or by stats. 
+        // For automation, let's pick from a batch of high-scoring random numbers?
+        // For simplicity: Random pool for now (or User provided in 'fixed' if we supported that for matrix)
+
         const wheels = WheelGenerator.generate(candidates, config.pickedNumbers, matrix.guarantee);
 
-        // 3. Score all generated games
-        return wheels.map(w => this.scoreGame(w, config))
+        return wheels.map(w => this.scoreGame(w, config, this.strategies))
             .sort((a, b) => b.totalScore - a.totalScore);
     }
 
-    /**
-     * Scores a single game against all active strategies
-     */
-    public scoreGame(numbers: number[], config: LotteryConfig): GameScore {
+    private scoreGame(numbers: number[], config: LotteryConfig, activeStrategies: Strategy[]): Game {
         let totalWeight = 0;
         let weightedSum = 0;
-        const stratResults = [];
+        const stratResults: StrategyResult[] = [];
 
-        for (const strat of this.strategies) {
+        for (const strat of activeStrategies) {
             if (strat.type === 'FILTER' && strat.validate) {
                 const res = strat.validate(numbers, config);
                 stratResults.push(res);
-
                 weightedSum += res.score * strat.weight;
                 totalWeight += strat.weight;
             }
@@ -128,35 +171,30 @@ export class CoreEngine {
         const finalScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0;
 
         return {
+            id: crypto.randomUUID(),
             numbers,
+            timestamp: Date.now(),
             totalScore: finalScore,
             strategiesResults: stratResults,
-            category: finalScore > 90 ? 'SNIPER' : 'BALANCED'
+            category: finalScore > 90 ? 'SNIPER' : 'BALANCED',
+            lotteryType: config.slug
         };
     }
 
-    /**
-     * Helper: Generate random numbers respecting fixed/excluded
-     */
     private generateRandomNumbers(
         config: LotteryConfig,
         fixed: number[] = [],
-        excluded: number[] = []
+        excluded: number[] = [],
+        sizeOverride?: number
     ): number[] {
         const picked = new Set<number>(fixed);
         const excludeSet = new Set<number>(excluded);
+        const targetSize = sizeOverride || config.pickedNumbers;
 
-        // Safety check
-        if (fixed.length > config.pickedNumbers) throw new Error("Too many fixed numbers");
+        if (fixed.length > targetSize) throw new Error("Muitos números fixos.");
 
-        while (picked.size < config.pickedNumbers) {
-            const n = Math.floor(Math.random() * config.totalNumbers) + 1; // 1 to total
-            // Adjust if range is 0-99 (Lotomania)
-            // Usually config.totalNumbers is 60 (1-60)
-            // If lotomania, min is 0. 
-            // Need to handle 0-index vs 1-index based on config?
-            // LOTTERY_CONFIG types usually imply 1-N.
-
+        while (picked.size < targetSize) {
+            const n = Math.floor(Math.random() * config.totalNumbers) + 1;
             if (!picked.has(n) && !excludeSet.has(n)) {
                 picked.add(n);
             }
@@ -166,42 +204,37 @@ export class CoreEngine {
     }
 
     /**
-     * Helper: Pick best candidates for Matrix
-     * Uses "Frequency" concept (simulated or real if Stats module exists).
-     * For now, generating a larger pool of randoms and picking the ones that appear in high-scoring games?
-     * Or simply picking High-Scoring small games and merging?
-     * 
-     * Better approach for v1: 
-     * Generate many random numbers, score them individually? No, strategies score sets.
-     * 
-     * Hybrid approach:
-     * Generate 100 random games.
-     * Count frequency of numbers in the Top 10 games.
-     * Pick the most frequent numbers.
+     * Biased Generation: Tries to include Hot Numbers
      */
-    private pickBestCandidates(config: LotteryConfig, count: number): number[] {
-        const poolSize = count * 5; // Generate enough samples
-        const sampleGames = this.generateSniper(config, 50); // Get 50 good games
+    private generateBiasedNumbers(
+        config: LotteryConfig,
+        stats: GameStats,
+        fixed: number[],
+        excluded: number[]
+    ): number[] {
+        const picked = new Set<number>(fixed);
+        const excludeSet = new Set<number>(excluded);
+        const targetSize = config.pickedNumbers;
 
-        const freq = new Map<number, number>();
-        for (const game of sampleGames) {
-            for (const n of game.numbers) {
-                freq.set(n, (freq.get(n) || 0) + 1);
+        // Try to add 2-3 hot numbers
+        const hotPool = stats.hotNumbers.filter(n => !picked.has(n) && !excludeSet.has(n));
+        const hotToPick = Math.min(hotPool.length, 3);
+
+        for (let i = 0; i < hotToPick; i++) {
+            // Pick random from hot pool
+            const idx = Math.floor(Math.random() * hotPool.length);
+            picked.add(hotPool[idx]);
+            hotPool.splice(idx, 1);
+        }
+
+        // Fill rest with random
+        while (picked.size < targetSize) {
+            const n = Math.floor(Math.random() * config.totalNumbers) + 1;
+            if (!picked.has(n) && !excludeSet.has(n)) {
+                picked.add(n);
             }
         }
 
-        // Sort by frequency
-        const sortedDetails = Array.from(freq.entries()).sort((a, b) => b[1] - a[1]);
-
-        // Take top N
-        const top = sortedDetails.slice(0, count).map(x => x[0]);
-
-        // If not enough, fill with random
-        while (top.length < count) {
-            const r = Math.floor(Math.random() * config.totalNumbers) + 1;
-            if (!top.includes(r)) top.push(r);
-        }
-
-        return top.sort((a, b) => a - b);
+        return Array.from(picked).sort((a, b) => a - b);
     }
 }

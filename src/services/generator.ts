@@ -1,4 +1,4 @@
-import type { FrequencyMap, LotteryStats, Game, LotteryConfig } from "../types";
+import type { FrequencyMap, LotteryStats, LotteryConfig } from "../types";
 
 type Strategy = 'trend' | 'balanced' | 'surprise';
 

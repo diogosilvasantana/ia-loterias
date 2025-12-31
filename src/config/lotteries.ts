@@ -1,4 +1,4 @@
-import type { LotteryConfig, LotteryType } from "../types";
+import type { LotteryConfig, LotteryType } from "../types/domain";
 
 export const LOTTERY_CONFIGS: Record<LotteryType, LotteryConfig> = {
     megasena: {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLotoMind } from '../../hooks/useLotoMind';
 import { LOTTERY_CONFIGS } from '../../config/lotteries'; // Use existing config
-import type { IntelligenceMode } from '../../types/engine';
+import type { IntelligenceMode } from '../../types/domain';
 import { StrategySelector } from './StrategySelector';
 import { GameCard } from './GameCard';
 import { useStore } from '../../store';
@@ -26,14 +26,16 @@ export const SaasDashboard: React.FC = () => {
 
     const { addCredits, setProStatus } = useStore();
 
-    const [mode, setMode] = useState<IntelligenceMode>('SNIPER');
+    const [mode, setMode] = useState<IntelligenceMode>('RANDOM');
     const [quantity, setQuantity] = useState(1);
 
     const handleGenerate = () => {
         generate(mode, quantity, mode === 'MATRIX' ? {
-            totalNumbers: 10, // Example: Pick from 10 numbers
-            guarantee: 4,     // Quadra
-            condition: 6      // Hit 6
+            id: 'matrix-1',
+            name: 'Fechamento Quadra',
+            totalNumbers: 10,
+            guarantee: 4,
+            condition: 6
         } : undefined);
     };
 

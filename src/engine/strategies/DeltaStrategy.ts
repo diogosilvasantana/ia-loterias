@@ -1,5 +1,4 @@
-import type { Strategy, StrategyResult } from '../../types/engine';
-import type { LotteryConfig } from '../../types';
+import type { Strategy, StrategyResult, LotteryConfig } from '../../types/domain';
 
 export const DeltaStrategy: Strategy = {
     id: 'delta-system',

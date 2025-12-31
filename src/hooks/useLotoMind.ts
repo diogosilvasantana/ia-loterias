@@ -1,10 +1,9 @@
 import { useState, useCallback } from 'react';
 import { CoreEngine } from '../engine/CoreEngine';
-import type { GameScore, IntelligenceMode, MatrixConfig } from '../types/engine';
-import type { LotteryConfig } from '../types';
-import { useStore } from '../store';
+import type { Game, IntelligenceMode, MatrixConfig, LotteryConfig } from '../types/domain';
+import { useAuth } from '../hooks/useAuth';
 
-// Initialize engine once (singleton behavior for now)
+// Singleton Engine
 const engine = new CoreEngine();
 
 interface UseLotoMindProps {
@@ -13,15 +12,16 @@ interface UseLotoMindProps {
 
 export const useLotoMind = ({ lottery }: UseLotoMindProps) => {
     const [isGenerating, setIsGenerating] = useState(false);
-    const [generatedGames, setGeneratedGames] = useState<GameScore[]>([]);
+    const [generatedGames, setGeneratedGames] = useState<Game[]>([]);
     const [error, setError] = useState<string | null>(null);
 
-    const { credits, isPro, removeCredits } = useStore();
+    // Use our new Auth hook
+    const { credits, isPro, useCredit } = useAuth();
 
     const generate = useCallback(async (
         mode: IntelligenceMode,
         quantity: number,
-        matrixConfig?: MatrixConfig,
+        matrixConfig?: MatrixConfig, // ID or object? We probably need to pass full config object from UI
         fixedNumbers: number[] = [],
         excludedNumbers: number[] = []
     ) => {
@@ -30,23 +30,22 @@ export const useLotoMind = ({ lottery }: UseLotoMindProps) => {
         setGeneratedGames([]);
 
         // SaaS Constraints
-        const isProFeature = mode === 'MATRIX' || mode === 'DELTA' || mode === 'EXCLUSION';
+        const isProFeature = mode === 'STATISTICAL' || mode === 'MATRIX' || mode === 'DELTA';
         if (isProFeature && !isPro) {
             setError("Funcionalidade exclusiva para usuários PRO.");
             setIsGenerating(false);
             return;
         }
 
-        if (credits < 1) {
+        if (credits < 1 && !isPro) {
             setError("Créditos insuficientes.");
             setIsGenerating(false);
             return;
         }
 
         try {
-            // Simulate Async for UI effect (and not blocking main thread too hard if we used workers, 
-            // but here it's sync. We can wrap in minimal timeout to let UI update).
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Fake Async for UX
+            await new Promise(resolve => setTimeout(resolve, 600));
 
             const results = engine.generate({
                 lottery,
@@ -54,18 +53,20 @@ export const useLotoMind = ({ lottery }: UseLotoMindProps) => {
                 quantity,
                 matrixConfig,
                 fixedNumbers,
-                excludedNumbers
+                excludedNumbers,
+                // stats: ... // We need to pass stats here if we want Statistical mode to work fully
+                // For now, we omit stats, engine will run purely random or simple bias
             });
 
             setGeneratedGames(results);
-            removeCredits(1); // Consume credit per generation batch
-        } catch (err) {
+            useCredit(); // Deduct credit
+        } catch (err: any) {
             console.error(err);
-            setError("Erro ao gerar jogos. Tente novamente.");
+            setError(err.message || "Erro ao gerar jogos.");
         } finally {
             setIsGenerating(false);
         }
-    }, [lottery, credits, isPro, removeCredits]);
+    }, [lottery, credits, isPro, useCredit]);
 
     return {
         isGenerating,
