@@ -49,7 +49,7 @@ export const Generator: React.FC = () => {
                             const newOptions = getNumberOptions(newLottery);
                             setNumbersCount(newOptions[0]);
                         }}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 font-medium focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all hover:border-slate-700"
                     >
                         <option value="megasena">Mega Sena</option>
                         <option value="lotofacil">Lotofácil</option>
@@ -67,7 +67,7 @@ export const Generator: React.FC = () => {
                     <select
                         value={numbersCount}
                         onChange={(e) => setNumbersCount(Number(e.target.value))}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 font-medium focus:outline-none focus:ring-1 focus:ring-amber-500 transition-all hover:border-slate-700"
                     >
                         {numberOptions.map(num => (
                             <option key={num} value={num}>
@@ -78,16 +78,16 @@ export const Generator: React.FC = () => {
                 </div>
 
                 {/* Price Display */}
-                <div className="bg-gradient-to-br from-emerald-950/50 to-slate-900 border border-emerald-800/30 rounded-lg p-5">
+                <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
                     <div className="flex items-start gap-3">
-                        <Info className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" />
+                        <Info className="w-5 h-5 text-slate-400 mt-1 flex-shrink-0" />
                         <div className="flex-1">
                             <p className="text-sm text-slate-300 mb-3">
-                                Você escolheu jogar <span className="font-mono font-bold text-emerald-400">{numbersCount}</span> números.
+                                Você escolheu jogar <span className="font-mono font-bold text-slate-100">{numbersCount}</span> números.
                             </p>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-xs text-slate-500 uppercase tracking-wider">Custo da aposta:</span>
-                                <span className="text-2xl font-mono font-bold text-emerald-400">
+                                <span className="text-2xl font-mono font-bold text-slate-100">
                                     {formatPrice(betPrice)}
                                 </span>
                             </div>
@@ -120,21 +120,21 @@ export const Generator: React.FC = () => {
                     onClick={handleGenerate}
                     disabled={isGenerating}
                     className={`
-                        w-full py-4 rounded-lg font-bold text-base shadow-lg transition-all
+                        w-full py-4 rounded-lg font-bold text-base transition-all border
                         flex items-center justify-center gap-2
                         ${isGenerating
-                            ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20 hover:shadow-emerald-600/40 transform hover:-translate-y-0.5'}
+                            ? 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed'
+                            : 'bg-emerald-700 hover:bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-black/20'}
                     `}
                 >
                     {isGenerating ? (
                         <>
-                            <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            <div className="w-5 h-5 border-2 border-slate-400 border-t-white rounded-full animate-spin" />
                             <span>Processando...</span>
                         </>
                     ) : (
                         <>
-                            <Zap size={20} className="fill-current" />
+                            <Zap size={20} className="fill-current text-white" />
                             <span>GERAR JOGOS</span>
                         </>
                     )}

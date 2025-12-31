@@ -29,13 +29,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-900 to-slate-900 border border-indigo-500/20 shadow-2xl">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+            <div className="relative overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-slate-800/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
 
                 <div className="relative p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
                     <div className="space-y-4 max-w-lg">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-sm font-bold border border-indigo-500/30">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-sm font-bold border border-slate-700">
                             <Calendar size={14} />
                             <span>Próximo Sorteio: {nextDrawDate}</span>
                         </div>
@@ -45,13 +45,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                         <p className="text-slate-400 text-lg">
                             A inteligência artificial do LotoMind já analisou os padrões. Prepare-se para o prêmio estimado de:
                         </p>
-                        <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500">
+                        <div className="text-3xl md:text-4xl font-mono font-bold text-emerald-400">
                             {estimatedPrize}
                         </div>
                         <div className="pt-4 flex gap-4">
                             <button
                                 onClick={() => onNavigate('generator')}
-                                className="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-1 flex items-center gap-2"
+                                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/25 transition-all transform hover:-translate-y-1 flex items-center gap-2"
                             >
                                 Gerar Jogo Agora <ArrowRight size={18} />
                             </button>
