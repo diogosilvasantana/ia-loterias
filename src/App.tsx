@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MainLayout, type TabId } from './layouts/MainLayout';
 import { Dashboard } from './pages/Dashboard';
 import { Generator } from './pages/Generator';
+import { Syndicate } from './pages/Syndicate';
 import { Matrices } from './pages/Matrices';
 import { useAuth } from './hooks/useAuth';
 
@@ -15,6 +16,8 @@ function App() {
         return <Dashboard onNavigate={setActiveTab} />;
       case 'generator':
         return <Generator />;
+      case 'syndicate':
+        return <Syndicate />;
       case 'matrices':
         return <Matrices />;
       case 'results':

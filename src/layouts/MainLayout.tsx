@@ -8,13 +8,14 @@ import {
     Trophy,
     History,
     User,
+    Users,
     Menu,
     X,
     LogOut,
     Crown
 } from 'lucide-react';
 
-export type TabId = 'dashboard' | 'generator' | 'matrices' | 'results' | 'history' | 'account';
+export type TabId = 'dashboard' | 'generator' | 'syndicate' | 'matrices' | 'results' | 'history' | 'account';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -29,6 +30,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, activeTab, onT
     const menuItems = [
         { id: 'dashboard', icon: LayoutDashboard, label: 'Início', pro: false },
         { id: 'generator', icon: Zap, label: 'Gerador IA', pro: false },
+        { id: 'syndicate', icon: Users, label: 'Bolões', pro: false },
         { id: 'matrices', icon: Grid3X3, label: 'Fechamentos', pro: true },
         { id: 'results', icon: Trophy, label: 'Resultados', pro: false },
         { id: 'history', icon: History, label: 'Meus Jogos', pro: false },
