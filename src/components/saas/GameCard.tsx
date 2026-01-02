@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import type { Game } from '../../types/domain';
 
 interface GameCardProps {
@@ -26,14 +27,26 @@ export const GameCard: React.FC<GameCardProps> = ({ game, index }) => {
             </div>
 
             <div className="flex flex-wrap gap-2 mb-4 justify-center">
-                {game.numbers.map((n) => (
-                    <div key={n} className="
-            w-10 h-10 rounded-full bg-slate-900 border border-slate-700 
-            flex items-center justify-center text-white font-bold
-            shadow-inner group-hover:border-emerald-500/30 transition-colors
-          ">
+                {game.numbers.map((n, idx) => (
+                    <motion.div
+                        key={`${game.id}-${idx}`}
+                        initial={{ opacity: 0, scale: 0, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{
+                            duration: 0.4,
+                            delay: idx * 0.1,
+                            type: "spring",
+                            stiffness: 260,
+                            damping: 20
+                        }}
+                        className="
+                            w-10 h-10 rounded-full bg-slate-900 border border-slate-700 
+                            flex items-center justify-center text-white font-bold
+                            shadow-inner group-hover:border-emerald-500/30 transition-colors
+                        "
+                    >
                         {String(n).padStart(2, '0')}
-                    </div>
+                    </motion.div>
                 ))}
             </div>
 

@@ -87,7 +87,7 @@ export const Generator: React.FC = () => {
                             </p>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-xs text-slate-500 uppercase tracking-wider">Custo da aposta:</span>
-                                <span className="text-2xl font-mono font-bold text-slate-100">
+                                <span className={`text-2xl font-mono font-bold ${betPrice >= 1000 ? 'text-red-400 drop-shadow-sm' : 'text-slate-100'}`}>
                                     {formatPrice(betPrice)}
                                 </span>
                             </div>
@@ -159,7 +159,20 @@ export const Generator: React.FC = () => {
                         )}
                     </h2>
                     {generatedGames.length > 0 && (
-                        <button className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors bg-slate-900 hover:bg-slate-800 px-3 py-2 rounded-lg border border-slate-800">
+                        <button
+                            onClick={() => {
+                                const content = generatedGames.map(g => g.numbers.map(n => n.toString().padStart(2, '0')).join(',')).join('\n');
+                                const blob = new Blob([content], { type: 'text/plain' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `loto_jogos_${new Date().toISOString().slice(0, 10)}.txt`;
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                            }}
+                            className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors bg-slate-900 hover:bg-slate-800 px-3 py-2 rounded-lg border border-slate-800"
+                        >
                             <Download size={16} />
                             Exportar
                         </button>

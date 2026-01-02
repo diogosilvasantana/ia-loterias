@@ -5,10 +5,13 @@ import { Generator } from './pages/Generator';
 import { Syndicate } from './pages/Syndicate';
 import { Matrices } from './pages/Matrices';
 import { useAuth } from './hooks/useAuth';
+import { useUserStore } from './store/userStore';
+import { GameList } from './components/GameList';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const { user } = useAuth();
+  const { removeGame, clearGames } = useUserStore();
 
   const renderContent = () => {
     switch (activeTab) {
@@ -28,8 +31,18 @@ function App() {
         );
       case 'history':
         return (
-          <div className="flex items-center justify-center h-96 text-slate-500">
-            {user ? 'Seus jogos salvos aparecerão aqui.' : 'Faça login para ver seu histórico.'}
+          <div className="container mx-auto px-4 py-8">
+            {user ? (
+              <GameList
+                games={user.savedGames}
+                onRemove={removeGame}
+                onClear={clearGames}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-64 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
+                <p>Faça login para ver seu histórico.</p>
+              </div>
+            )}
           </div>
         );
       case 'account':

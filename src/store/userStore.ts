@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { UserProfile } from '../types/domain';
+import type { UserProfile, Game } from '../types/domain';
 import { PLANS } from '../config/plans';
 
 interface UserState {
@@ -11,7 +11,9 @@ interface UserState {
     upgradeToPro: () => void;
     downgradeToFree: () => void;
     decrementCredits: () => boolean; // Returns true if success
-    saveGame: (gameId: string) => void;
+    saveGame: (game: Game) => void;
+    removeGame: (gameId: string) => void;
+    clearGames: () => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -55,10 +57,24 @@ export const useUserStore = create<UserState>()(
                 return false;
             },
 
-            saveGame: (gameId) => set((state) => ({
+            saveGame: (game) => set((state) => ({
                 user: state.user ? {
                     ...state.user,
-                    savedGames: [...state.user.savedGames, gameId]
+                    savedGames: [...state.user.savedGames, game]
+                } : null
+            })),
+
+            removeGame: (gameId) => set((state) => ({
+                user: state.user ? {
+                    ...state.user,
+                    savedGames: state.user.savedGames.filter(g => g.id !== gameId)
+                } : null
+            })),
+
+            clearGames: () => set((state) => ({
+                user: state.user ? {
+                    ...state.user,
+                    savedGames: []
                 } : null
             }))
         }),

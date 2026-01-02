@@ -81,5 +81,5 @@ export interface UserProfile {
     email: string;
     plan: PlanType;
     credits: number;
-    savedGames: string[]; // IDs
+    savedGames: Game[];
 }
