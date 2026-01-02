@@ -33,6 +33,7 @@
 - 🧠 **4 Modos de Inteligência** - Random, Statistical, Matrix e Delta
 - 💰 **Sistema de Preços Real** - Tabelas oficiais da Caixa Econômica Federal
 - 👥 **Calculadora de Bolões** - Simule e divida custos entre participantes
+- 🏆 **Conferidor Automático** - Verifique seus jogos contra resultados históricos
 - 📊 **9 Loterias Suportadas** - Mega Sena, Lotofácil, Quina e mais
 - 🎯 **Análise em Tempo Real** - Cálculo instantâneo de preços e probabilidades
 
@@ -50,7 +51,7 @@
   - **Matrix**: Fechamentos matemáticos (PRO)
   - **Delta**: Sistema de diferenças (PRO)
 - **Preço em Tempo Real**: Veja o custo da aposta instantaneamente
-- **Exportação**: Salve seus jogos gerados
+- **Exportação (TXT)**: Salve seus jogos em formato pronto para apostas online
 
 ### 👥 Simulador de Bolões
 
@@ -62,12 +63,12 @@
 - Suporte para até 1000 participantes
 - Até 100 jogos por bolão
 
-### 📊 Dashboard
+### 📊 Dashboard 2.0
 
-- Próximo sorteio com contagem regressiva
-- Últimos resultados oficiais
-- Estatísticas e análises
-- Histórico de jogos salvos
+- **Hero Section**: Próximo sorteio com estimativa de prêmio (ex: R$ 58M) e data dinâmica
+- **Ticker de Resultados**: Últimos concursos oficiais
+- **Resumo Financeiro**: Investimento acumulado vs. Retorno Potencial
+- **Meus Jogos**: Lista de jogos salvos com verificação de ganho (Badges de Ouro, Prata e Bronze)
 
 ### 🎨 Design System
 
@@ -95,6 +96,7 @@
 - **Tailwind CSS 4** - Utility-first CSS
 - **Shadcn/ui** - Componentes acessíveis
 - **Lucide React** - Ícones modernos
+- **Framer Motion** - Animações fluidas e staggers
 
 ### State Management
 - **Zustand** - Estado global leve
@@ -152,6 +154,7 @@ npm run preview
 5. Selecione o modo de inteligência
 6. Defina quantos jogos deseja gerar
 7. Clique em **"GERAR JOGOS"**
+8. (Opcional) Clique no ícone **Exportar** para baixar o TXT
 
 **Exemplo de Saída:**
 ```
@@ -162,7 +165,18 @@ Modo: STATISTICAL
 Pontuação média: 87/100
 ```
 
-### 2. Simulador de Bolões
+### 2. Conferência Automática
+
+1. Vá para a aba **"Meus Jogos"** (Dashboard ou Sidebar)
+2. Veja a lista dos seus jogos salvos
+3. Clique em **"Conferir Resultados"**
+4. O sistema processará os jogos contra o histórico
+5. Badges aparecerão nos jogos premiados:
+   - 🏆 **Sena** (6 acertos)
+   - 🥈 **Quina** (5 acertos)
+   - 🥉 **Quadra** (4 acertos)
+
+### 3. Simulador de Bolões
 
 1. Acesse **"Bolões"** no menu
 2. Configure:
@@ -174,7 +188,7 @@ Pontuação média: 87/100
    - **Custo Total**: R$ 700,00
    - **Por Cota**: R$ 35,00
 
-### 3. Planos
+### 4. Planos
 
 **FREE (Gratuito):**
 - Modo Random Smart
@@ -186,6 +200,7 @@ Pontuação média: 87/100
 - Créditos ilimitados
 - Suporte prioritário
 - Exportação avançada
+- **Checker Automático**
 
 ---
 
@@ -241,6 +256,7 @@ src/
 │   └── MainLayout.tsx  # Layout principal com sidebar
 │
 ├── lib/                # Utilitários
+│   ├── checker.ts      # Validador de resultados (NOVO)
 │   ├── priceCalculator.ts # Cálculos de preço
 │   └── utils.ts        # Helpers gerais
 │
@@ -271,6 +287,9 @@ src/
 - [x] Gerador com 4 modos de IA
 - [x] Simulador de Bolões
 - [x] Sistema de créditos e planos
+- [x] **Conferidor Automático de Jogos**
+- [x] **Exportação de Volantes (TXT)**
+- [x] **Dashboard 2.0 (Financeiro + Dados Reais)**
 
 ### 🚧 Fase 2 - Em Desenvolvimento
 - [ ] Painel Administrativo
